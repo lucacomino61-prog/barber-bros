@@ -117,7 +117,8 @@ export function mountChair(sceneEl: HTMLElement, host: HTMLElement, onFirstFrame
   const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 50);
   const look = new THREE.Vector3();
 
-  const state = { p: 0 };
+  // p: scroll progress 0..1; spin: extra turn from dragging (radians), always settles on a whole turn
+  const state = { p: 0, spin: 0 };
   let dirty = true;
   let visible = true;
   let first = true;
@@ -127,14 +128,14 @@ export function mountChair(sceneEl: HTMLElement, host: HTMLElement, onFirstFrame
   const portraitMQ = window.matchMedia('(max-aspect-ratio: 4/5)');
   let forcePortrait: boolean | null = null;
 
-  const apply = (p: number) => {
+  const apply = (p: number, spin = state.spin) => {
     let i = 0;
     while (i < KEYS.length - 2 && p > KEYS[i + 1].p) i++;
     const a = KEYS[i];
     const b = KEYS[i + 1];
     const t = smooth(Math.min(1, Math.max(0, (p - a.p) / (b.p - a.p))));
     const far = (forcePortrait ?? portraitMQ.matches) ? 1.3 : 1;
-    chair.rotation.y = lerp(a.rot, b.rot, t);
+    chair.rotation.y = lerp(a.rot, b.rot, t) + spin;
     camera.position.set(lerp(a.cam[0], b.cam[0], t), lerp(a.cam[1], b.cam[1], t), lerp(a.cam[2], b.cam[2], t) * far);
     look.set(lerp(a.look[0], b.look[0], t), lerp(a.look[1], b.look[1], t), lerp(a.look[2], b.look[2], t));
     camera.lookAt(look);
@@ -190,6 +191,39 @@ export function mountChair(sceneEl: HTMLElement, host: HTMLElement, onFirstFrame
   };
   sceneEl.addEventListener('focusin', onFocus);
 
+  // desktop: grab the chair and turn it. On release it keeps its momentum and lands on a whole turn, so the scroll
+  // scene always finds it at the designed angle. Touch screens scroll instead. Motion runs on the GSAP ticker.
+  const fine = window.matchMedia('(hover: hover) and (pointer: fine)');
+  let drag: { x: number; from: number; t: number; v: number } | null = null;
+  const onDown = (e: PointerEvent) => {
+    if (!fine.matches || e.button !== 0) return;
+    gsap.killTweensOf(state, 'spin');
+    drag = { x: e.clientX, from: state.spin, t: performance.now(), v: 0 };
+    host.setPointerCapture(e.pointerId);
+    sceneEl.classList.add('is-grabbing');
+  };
+  const onMove = (e: PointerEvent) => {
+    if (!drag) return;
+    const now = performance.now();
+    const next = drag.from + (e.clientX - drag.x) * 0.011;
+    drag.v = (next - state.spin) / Math.max(8, now - drag.t);
+    drag.t = now;
+    state.spin = next;
+    dirty = true;
+  };
+  const onUp = () => {
+    if (!drag) return;
+    const flung = performance.now() - drag.t < 90 ? drag.v * 380 : 0; // a flick carries on; a stop does not
+    const turn = Math.PI * 2;
+    drag = null;
+    sceneEl.classList.remove('is-grabbing');
+    gsap.to(state, { spin: Math.round((state.spin + flung) / turn) * turn, duration: 1.3, ease: 'power3.out', onUpdate: () => { dirty = true; } });
+  };
+  host.addEventListener('pointerdown', onDown);
+  host.addEventListener('pointermove', onMove);
+  host.addEventListener('pointerup', onUp);
+  host.addEventListener('pointercancel', onUp);
+
   // one off-screen-sized render, read back as PNG, then the live size again (the next tick redraws the scroll state)
   const still = (w: number, h: number, set: () => void) => {
     renderer.setSize(w, h, false);
@@ -205,6 +239,12 @@ export function mountChair(sceneEl: HTMLElement, host: HTMLElement, onFirstFrame
   return {
     destroy() {
       sceneEl.removeEventListener('focusin', onFocus);
+      host.removeEventListener('pointerdown', onDown);
+      host.removeEventListener('pointermove', onMove);
+      host.removeEventListener('pointerup', onUp);
+      host.removeEventListener('pointercancel', onUp);
+      gsap.killTweensOf(state, 'spin');
+      sceneEl.classList.remove('is-grabbing');
       tween.scrollTrigger?.kill();
       tween.kill();
       gsap.ticker.remove(tick);
@@ -217,7 +257,7 @@ export function mountChair(sceneEl: HTMLElement, host: HTMLElement, onFirstFrame
     // used by tools/render-stills.mjs to make the static fallback images
     renderAt(p: number, w: number, h: number, portrait?: boolean) {
       forcePortrait = portrait ?? null;
-      const url = still(w, h, () => apply(p));
+      const url = still(w, h, () => apply(p, 0));
       forcePortrait = null;
       return url;
     },

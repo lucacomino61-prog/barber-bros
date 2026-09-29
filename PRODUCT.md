@@ -16,7 +16,7 @@ Astro, static output. It is delegated to Claude, and matches Award Anatomy, whic
 
 ## Users
 
-People in and around Fier, Albania who want a haircut, a beard trim or a shave. They read Albanian, so the site is in Albanian (`lang="sq"`). They mostly look on a phone, and they need to know what the shop offers, what it costs, when it is open, where it is, and how to book: by WhatsApp or a call. Secondary user: Luca, who builds and hands the site to the shop owner.
+People in and around Fier, Albania who want a haircut, a beard trim or a shave. They read Albanian, so the site is Albanian first (`/`, `lang="sq"`), with an English version at `/en/` for visitors. They mostly look on a phone, and they need to know what the shop offers, what it costs, when it is open, where it is, and how to book: by WhatsApp or a call. Secondary user: Luca, who builds and hands the site to the shop owner.
 
 ## Product Purpose
 

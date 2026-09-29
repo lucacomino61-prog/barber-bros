@@ -1,5 +1,7 @@
 import { motionAllowed, startScroll, stopScroll, onMotionPreference, ScrollTrigger } from './motion';
 import type { ChairScene } from './chair';
+import './open';
+import './book';
 
 const d = document.documentElement;
 

@@ -1,0 +1,300 @@
+---
+// The home page, in either language (src/pages/index.astro and src/pages/en/index.astro).
+import Base from '../layouts/Base.astro';
+import Icon from './Icon.astro';
+import Logo from './Logo.astro';
+import Slug from './Slug.astro';
+import OpenStatus from './OpenStatus.astro';
+import StreetMap from './StreetMap.astro';
+import { shop, lek, whatsappHref, callHref } from '../data/shop';
+import { copy, localePath, listJoin, type Lang } from '../i18n/copy';
+import { block, upm } from '../lib/outline';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const t = copy[lang];
+
+const priced = shop.services.filter((s) => s.price);
+const unpriced = shop.services.filter((s) => !s.price);
+const from = Math.min(...priced.map((s) => s.price!));
+const others = listJoin(unpriced.map((s) => (lang === 'en' ? s.phrase.en : s.name.sq.toLowerCase())), lang);
+// the poster name as outlines: two lines 0.8em apart, tracked -0.01em like the .poster type it replaces
+const poster = block(['Barber', 'Bros'], 0.8, -0.01);
+
+// booking: half-hour slots from opening to half an hour before closing
+const toMin = (hm: string) => +hm.slice(0, 2) * 60 + +hm.slice(3);
+const slots: string[] = [];
+for (let m = toMin(shop.hours.open); m <= toMin(shop.hours.close) - 30; m += 30) slots.push(`${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`);
+const b = t.book;
+const bookData = {
+  phone: shop.whatsapp,
+  close: shop.hours.close,
+  services: Object.fromEntries(shop.services.map((s) => [s.id, s.phrase[lang]])),
+  template: b.template, today: b.today, tomorrow: b.tomorrow, todayPhrase: b.todayPhrase, tomorrowPhrase: b.tomorrowPhrase,
+  dayPhrase: b.dayPhrase, weekdays: b.weekdays, weekdayPhrases: b.weekdayPhrases, months: b.months,
+};
+
+// what Google reads: the shop as a local business
+const site = Astro.site ?? new URL('http://localhost:3690');
+const abs = (p: string) => new URL(p, site).href;
+const ld = {
+  '@context': 'https://schema.org',
+  '@type': 'HairSalon',
+  name: shop.name,
+  description: t.meta.homeDescription,
+  url: abs(localePath(lang, '/')),
+  image: abs(`/og/${lang}.jpg`),
+  logo: abs('/brand/barber-bros-logo.svg'),
+  telephone: shop.phone.replace(/\s/g, ''),
+  address: { '@type': 'PostalAddress', streetAddress: shop.address.line, addressLocality: 'Fier', addressCountry: 'AL' },
+  geo: { '@type': 'GeoCoordinates', latitude: shop.address.geo.lat, longitude: shop.address.geo.lon },
+  hasMap: shop.address.mapUrl,
+  openingHoursSpecification: [{ '@type': 'OpeningHoursSpecification', dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'], opens: shop.hours.open, closes: shop.hours.close }],
+  makesOffer: priced.map((s) => ({ '@type': 'Offer', itemOffered: { '@type': 'Service', name: s.name[lang] }, price: String(s.price), priceCurrency: 'ALL' })),
+};
+---
+<Base lang={lang} path="/" title={t.meta.homeTitle} description={t.meta.homeDescription}>
+  <script slot="head" type="application/ld+json" set:html={JSON.stringify(ld)} />
+
+  <section class="scene" data-scene aria-labelledby="name">
+    <div class="scene__stage">
+      <h1 id="name" class="scene__name"><span class="visually-hidden">Barber Bros</span><svg class="scene__word" viewBox={`0 0 ${poster.width.toFixed(1)} ${poster.height.toFixed(1)}`} style={`--h:${(poster.height / upm).toFixed(4)}em`} aria-hidden="true"><path d={poster.d} fill="currentColor" /></svg></h1>
+      <picture>
+        <source media="(max-aspect-ratio: 4/5)" srcset="/img/chair-0-tall.webp" width="760" height="1450" />
+        <img class="scene__still" src="/img/chair-0.webp" alt={t.hero.still} width="1400" height="1400" fetchpriority="high" decoding="async" />
+      </picture>
+      <div class="scene__canvas" data-canvas aria-hidden="true"></div>
+
+      <div class="chap is-active" data-chapter="0">
+        <p class="chap__line"><Slug text={t.hero.intro} /></p>
+        <div class="chap__act">
+          <a class="pill pill--solid" href={whatsappHref(lang)} target="_blank" rel="noopener"><Icon name="whatsapp-logo" /> <span>{t.cta.book}<span class="chap__long">{t.cta.bookLong}</span></span><span class="visually-hidden">{t.cta.opens}</span></a>
+          <a class="pill" href={callHref()}><Icon name="phone" /> {t.cta.call}</a>
+        </div>
+      </div>
+      <div class="chap" data-chapter="1" aria-hidden="true">
+        <p class="chap__big"><Slug text={t.hero.cut} /></p>
+        <p class="chap__line"><Slug text={t.hero.cutLine} /></p>
+      </div>
+      <div class="chap" data-chapter="2" aria-hidden="true">
+        <p class="chap__big"><Slug text={t.hero.shave} /></p>
+        <p class="chap__line"><Slug text={t.hero.shaveLine} /></p>
+      </div>
+      <div class="chap" data-chapter="3" aria-hidden="true">
+        <p class="chap__big"><Slug text={t.hero.ready} /></p>
+        <div class="chap__act">
+          <a class="pill pill--solid" href={whatsappHref(lang)} target="_blank" rel="noopener" tabindex="-1"><Icon name="whatsapp-logo" /> <span>{t.cta.book}<span class="chap__long">{t.cta.bookLong}</span></span></a>
+          <a class="pill" href={callHref()} tabindex="-1"><Icon name="phone" /> {t.cta.call}</a>
+        </div>
+      </div>
+      <p class="scene__cue small" aria-hidden="true"><span class="cue-touch">{t.hero.cue}</span><span class="cue-drag">{t.hero.cueDrag}</span></p>
+    </div>
+  </section>
+
+  <section class="section wrap menu" id={t.ids.prices} aria-labelledby="menu-title">
+    <div class="menu__board">
+      <h2 id="menu-title" class="h2 reveal menu__title">{t.prices.title}</h2>
+      <ol class="board" role="list">
+        {priced.map((s, i) => (
+          <li class="board__row reveal" style={`--i:${i}`}>
+            <span class="board__name">{s.name[lang]}</span>
+            <span class="board__dots" aria-hidden="true"></span>
+            <span class="board__price">{lek(s.price!)}</span>
+          </li>
+        ))}
+      </ol>
+      <p class="menu__more reveal">{t.prices.from.replace('{from}', String(from))} {t.prices.others.replace('{list}', others)}</p>
+      <a class="pill pill--solid menu__book" href={`#${t.ids.book}`}><Icon name="calendar-check" /> {t.prices.cta}</a>
+    </div>
+    <figure class="menu__fig reveal">
+      <img src="/img/chair-1.webp" alt={t.prices.fig} width="1400" height="1400" loading="lazy" decoding="async" />
+    </figure>
+  </section>
+
+  <section class="section wrap book" id={t.ids.book} aria-labelledby="book-title">
+    <div class="book__main">
+      <h2 id="book-title" class="h2 reveal">{b.title}</h2>
+      <p class="book__intro reveal">{b.intro}</p>
+      <form class="book__form" data-book hidden>
+        <fieldset class="book__set">
+          <legend class="book__legend">{b.service}</legend>
+          <div class="chips">
+            {shop.services.map((s, i) => (
+              <label class="chip"><input type="radio" name="book-service" value={s.id} checked={i === 0} /><span>{s.name[lang]}{s.price && <b class="chip__price">{lek(s.price)}</b>}</span></label>
+            ))}
+          </div>
+        </fieldset>
+        <fieldset class="book__set">
+          <legend class="book__legend">{b.day}</legend>
+          <div class="chips" data-book-days></div>
+        </fieldset>
+        <div class="book__set">
+          <label class="book__legend" for="book-time">{b.time}</label>
+          <span class="book__select">
+            <select id="book-time" data-book-time>
+              {slots.map((s) => <option value={s}>{s}</option>)}
+            </select>
+            <Icon name="caret-down" />
+          </span>
+        </div>
+        <div class="book__set">
+          <p class="book__legend" id="book-msg">{b.message}</p>
+          <p class="book__text" data-book-text aria-live="polite" aria-labelledby="book-msg"></p>
+        </div>
+        <a class="pill pill--solid book__send" data-book-send href={whatsappHref(lang)} target="_blank" rel="noopener"><Icon name="whatsapp-logo" /> {b.send}<span class="visually-hidden">{t.cta.opens}</span></a>
+        <script is:inline type="application/json" data-book-copy set:html={JSON.stringify(bookData)} />
+      </form>
+      <div class="book__fallback" data-book-fallback>
+        <p class="book__intro">{b.fallback}</p>
+        <a class="pill pill--solid" href={whatsappHref(lang)} target="_blank" rel="noopener"><Icon name="whatsapp-logo" /> {t.cta.book}{t.cta.bookLong}<span class="visually-hidden">{t.cta.opens}</span></a>
+      </div>
+    </div>
+    <figure class="book__fig reveal">
+      <img src="/img/chair-above.webp" alt={b.fig} width="1400" height="1400" loading="lazy" decoding="async" />
+    </figure>
+  </section>
+
+  <section class="section wrap barbers" id={t.ids.barbers} aria-labelledby="barbers-title">
+    <h2 id="barbers-title" class="h2 reveal">{t.barbers.title}</h2>
+    <div class="barbers__grid">
+      {Array.from({ length: shop.team.count }, (_, i) => (
+        <figure class="frame reveal" style={`--i:${i}`}>
+          <div class="frame__photo">
+            <Logo variant="mark" label="" class="frame__mark" />
+            <span class="small">{t.barbers.photo}</span>
+          </div>
+          <figcaption><span class="frame__name">{t.barbers.name.replace('{n}', String(i + 1))}</span> <span class="tag">{t.barbers.soon}</span></figcaption>
+        </figure>
+      ))}
+    </div>
+  </section>
+
+  <section class="section wrap visit" id={t.ids.visit} aria-labelledby="visit-title">
+    <div class="visit__info">
+      <h2 id="visit-title" class="h2 reveal">{t.visit.title}</h2>
+      <div class="visit__cols">
+        <div class="reveal">
+          <h3 class="visit__h"><Icon name="map-pin" /> {t.visit.address}</h3>
+          <p>{shop.address.line}<br />{shop.address.area[lang]}</p>
+        </div>
+        <div class="reveal" style="--i:1">
+          <h3 class="visit__h"><Icon name="clock" /> {t.visit.hours}</h3>
+          <dl class="hours">
+            <div><dt>{shop.hours.days[lang]}</dt><dd>{shop.hours.open}-{shop.hours.close}</dd></div>
+          </dl>
+          <OpenStatus lang={lang} class="visit__status" />
+        </div>
+      </div>
+      <div class="visit__act reveal" style="--i:2">
+        <a class="pill pill--solid" href={whatsappHref(lang)} target="_blank" rel="noopener"><Icon name="whatsapp-logo" /> {t.cta.book}{t.cta.bookLong}<span class="visually-hidden">{t.cta.opens}</span></a>
+        <a class="pill" href={callHref()}><Icon name="phone" /> {shop.phone}</a>
+        <a class="pill" href={shop.address.mapUrl} target="_blank" rel="noopener"><Icon name="map-trifold" /> {t.visit.map}<span class="visually-hidden">{t.visit.mapOpens}</span></a>
+      </div>
+    </div>
+    <StreetMap lang={lang} class="reveal" />
+  </section>
+</Base>
+
+<style>
+  /* ---------- the chair scene ---------- */
+  .scene { position: relative; }
+  :global(.js-motion) .scene { height: 430svh; }
+  /* never taller than the space under the header, so a phone held sideways still sees the captions */
+  .scene__stage { position: relative; block-size: calc(100svh - var(--header-h) - 2rem); min-block-size: min(34rem, calc(100svh - var(--header-h))); overflow: hidden; }
+  :global(.js-motion) .scene__stage { position: sticky; top: var(--header-h); }
+  .scene__name {
+    position: absolute; inset-inline: 0; top: 46%; transform: translateY(-50%); z-index: 0;
+    display: grid; justify-items: center; font-size: min(30vw, 40svh); line-height: 0.8; color: var(--ink); pointer-events: none;
+  }
+  .scene__word { block-size: var(--h); inline-size: auto; }
+  /* portrait: the name reads first at the top, the chair sits under it (chair.ts frames the camera on the same query) */
+  @media (max-aspect-ratio: 4/5) { .scene__name { top: 3rem; transform: none; } }
+  .scene__canvas { position: absolute; inset: 0; z-index: 1; }
+  /* the still is rendered with the canvas's own camera, so at full stage height it lines up with the first frame */
+  .scene__still { position: absolute; z-index: 1; top: 0; left: 50%; block-size: 100%; inline-size: auto; max-inline-size: none; transform: translateX(-50%); transition: opacity 400ms ease; }
+  .scene.is-live .scene__still { opacity: 0; }
+  .scene__canvas :global(canvas) { inline-size: 100%; block-size: 100%; }
+  /* desktop: the chair can be grabbed and turned (chair.ts) */
+  @media (hover: hover) and (pointer: fine) {
+    .scene.is-live .scene__canvas { cursor: grab; }
+    .scene.is-grabbing .scene__canvas { cursor: grabbing; }
+  }
+  .scene.is-grabbing { user-select: none; }
+  .chap {
+    position: absolute; z-index: 2; inset-inline: var(--gutter); bottom: clamp(1.25rem, 4svh, 3rem);
+    display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: var(--space-s);
+    opacity: 0; transform: translateY(12px); pointer-events: none;
+    transition: opacity 300ms var(--ease-out), transform 300ms var(--ease-out);
+  }
+  .chap.is-active, .chap[data-chapter="0"]:focus-within { opacity: 1; transform: none; pointer-events: auto; }
+  :global(html:not(.js-motion)) .chap:not([data-chapter="0"]) { display: none; }
+  :global(html:not(.js-motion)) .chap[data-chapter="0"] { opacity: 1; transform: none; pointer-events: auto; }
+  .chap__line { font-size: var(--step-2); font-weight: 600; line-height: 1.3; max-inline-size: 22ch; }
+  .chap__big { font-family: var(--display); font-weight: 900; text-transform: uppercase; font-size: clamp(3rem, 2rem + 5vw, 7rem); line-height: 0.85; flex-basis: 100%; }
+  .chap__act { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  /* narrow phones: both buttons on one row; the WhatsApp icon carries the rest, screen readers still hear it */
+  @media (max-width: 440px) { .chap__long { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; } }
+  .scene__cue { position: absolute; z-index: 2; top: 1rem; right: var(--gutter); font-weight: 600; }
+  .cue-drag { display: none; }
+  @media (hover: hover) and (pointer: fine) { .cue-touch { display: none; } .cue-drag { display: inline; } }
+  :global(html:not(.js-motion)) .scene__cue { display: none; }
+
+  /* ---------- prices: the menu board ---------- */
+  .menu, .book { display: grid; gap: var(--space-xl) clamp(2rem, 5vw, 6rem); align-items: center; }
+  @media (min-width: 960px) { .menu, .book { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); } }
+  .menu__title { margin-block-end: var(--space-l); }
+  .board { padding: 0; border-block-start: 3px solid var(--ink); }
+  .board__row { display: grid; grid-template-columns: auto 1fr auto; column-gap: 0.75rem; align-items: baseline; padding-block: 1rem 0.9rem; border-block-end: 1.5px solid var(--line); }
+  .board__name, .board__price { font-family: var(--display); font-weight: 900; text-transform: uppercase; font-size: clamp(2rem, 1.2rem + 3vw, 4.2rem); line-height: 1; }
+  .board__price { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .board__dots { border-block-end: 3px dotted var(--ink); transform: translateY(-0.35em); }
+  .menu__more { margin-block-start: var(--space-m); font-size: var(--step-1); line-height: 1.4; max-inline-size: 44ch; }
+  .menu__book { margin-block-start: var(--space-l); }
+  .menu__fig, .book__fig { margin: 0; }
+  .menu__fig img, .book__fig img { inline-size: 100%; block-size: auto; aspect-ratio: 1; object-fit: contain; }
+
+  /* ---------- booking: the message writes itself ---------- */
+  .book__intro { margin-block-start: var(--space-m); font-size: var(--step-1); line-height: 1.4; max-inline-size: 46ch; }
+  .book__form { display: grid; gap: var(--space-l); margin-block-start: var(--space-l); }
+  .book__form[hidden], .book__fallback[hidden] { display: none; }
+  .book__fallback { display: grid; gap: var(--space-m); justify-items: start; }
+  .book__set { display: grid; gap: 0.7rem; justify-items: start; margin: 0; padding: 0; border: 0; min-inline-size: 0; }
+  .book__legend { padding: 0; font-family: var(--display); font-weight: 900; font-size: 1.55rem; line-height: 1; text-transform: uppercase; }
+  /* chips: radio pills. :global because the day chips are made in the browser (scripts/book.ts) */
+  .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .book :global(.chip) { position: relative; display: inline-flex; }
+  .book :global(.chip input) { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
+  .book :global(.chip span) { display: inline-flex; align-items: center; gap: 0.5em; min-block-size: 44px; padding: 0.5rem 1.1rem; border: 2px solid var(--ink); border-radius: var(--pill); font-weight: 650; line-height: 1.1; transition: background-color 160ms ease, color 160ms ease; }
+  .book :global(.chip input:checked + span) { background: var(--ink); color: var(--blue); }
+  .book :global(.chip input:focus-visible + span) { outline: 3px solid var(--ink); outline-offset: 3px; box-shadow: 0 0 0 7px var(--blue); }
+  .book :global(.chip input:disabled) { cursor: not-allowed; }
+  .book :global(.chip input:disabled + span) { border-style: dashed; text-decoration: line-through; }
+  @media (hover: hover) and (pointer: fine) { .book :global(.chip input:not(:checked):not(:disabled):hover + span) { background: color-mix(in oklab, var(--blue) 82%, var(--ink)); } }
+  .book :global(.chip__price) { font-family: var(--display); font-weight: 900; font-size: 1.1em; }
+  .book__select { position: relative; display: inline-flex; align-items: center; }
+  .book__select select { appearance: none; min-block-size: 48px; padding: 0.5rem 2.8rem 0.5rem 1.2rem; border: 2px solid var(--ink); border-radius: var(--pill); background: var(--blue); color: var(--ink); font-size: 1.1rem; font-weight: 650; font-variant-numeric: tabular-nums; cursor: pointer; }
+  .book__select :global(svg) { position: absolute; right: 1rem; inline-size: 1.1rem; block-size: 1.1rem; pointer-events: none; }
+  .book__text { background: var(--ink); color: var(--blue); padding: 1rem 1.25rem; font-size: var(--step-1); line-height: 1.45; max-inline-size: 42ch; min-block-size: 4.5em; }
+  .book__send { justify-self: start; }
+
+  /* ---------- the barbers ---------- */
+  .barbers__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(18rem, 100%), 1fr)); gap: var(--space-l); margin-block-start: var(--space-xl); }
+  .frame { margin: 0; display: grid; gap: 0.75rem; }
+  .frame__photo { aspect-ratio: 4 / 5; background: var(--ink); color: var(--blue); display: grid; place-content: center; justify-items: center; gap: 1rem; }
+  .frame__photo :global(.frame__mark) { block-size: 5rem; opacity: 0.9; }
+  .frame figcaption { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+  .frame__name { font-family: var(--display); font-weight: 900; text-transform: uppercase; font-size: 1.8rem; line-height: 1; }
+
+  /* ---------- visit ---------- */
+  .visit { display: grid; gap: var(--space-xl) clamp(2rem, 5vw, 6rem); align-items: center; }
+  @media (min-width: 960px) { .visit { grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); } }
+  .visit__cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr)); gap: var(--space-l); margin-block: var(--space-l); }
+  .visit__cols > div { display: grid; gap: 0.6rem; align-content: start; justify-items: start; }
+  .visit__h { display: inline-flex; align-items: center; gap: 0.4rem; font-family: var(--display); font-weight: 900; text-transform: uppercase; font-size: 1.6rem; line-height: 1; }
+  .visit__cols p { font-size: var(--step-1); line-height: 1.35; }
+  .hours { margin: 0; display: grid; gap: 0.3rem; inline-size: 100%; max-inline-size: 22rem; }
+  .hours div { display: flex; justify-content: space-between; gap: 1rem; border-block-end: 1.5px solid var(--line); padding-block: 0.3rem; }
+  .hours dd { margin: 0; font-variant-numeric: tabular-nums; font-weight: 600; }
+  .visit :global(.visit__status) { margin-block-start: 0.2rem; }
+  .visit__act { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+</style>

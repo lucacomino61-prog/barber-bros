@@ -2,12 +2,24 @@
 import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import { copy, localePath, type Lang } from '../i18n/copy';
 
-interface Props { title: string; description: string }
-const { title, description } = Astro.props;
+interface Props {
+  lang: Lang;
+  title: string;
+  description: string;
+  /** the page's path without the language prefix ('/', '/brand/'); omit on pages that exist once (404) */
+  path?: string;
+}
+const { lang, title, description, path } = Astro.props;
+const t = copy[lang];
+// link previews and alternates need absolute URLs: set SITE_URL to the real domain at launch
+const site = Astro.site ?? new URL('http://localhost:3690');
+const abs = (p: string) => new URL(p, site).href;
+const ogImage = abs(`/og/${lang}.jpg`);
 ---
 <!doctype html>
-<html lang="sq">
+<html lang={lang}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -16,8 +28,26 @@ const { title, description } = Astro.props;
     <meta name="robots" content="noindex, nofollow" />
     <meta name="theme-color" content="#1f9ad6" />
     <link rel="icon" href="/brand/favicon.svg" type="image/svg+xml" />
+    {path && <link rel="canonical" href={abs(localePath(lang, path))} />}
+    {path && <link rel="alternate" hreflang="sq" href={abs(localePath('sq', path))} />}
+    {path && <link rel="alternate" hreflang="en" href={abs(localePath('en', path))} />}
+    {path && <link rel="alternate" hreflang="x-default" href={abs(localePath('sq', path))} />}
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Barber Bros" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    {path && <meta property="og:url" content={abs(localePath(lang, path))} />}
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={t.meta.ogAlt} />
+    <meta property="og:locale" content={t.locale} />
+    <meta property="og:locale:alternate" content={copy[lang === 'sq' ? 'en' : 'sq'].locale} />
+    <meta name="twitter:card" content="summary_large_image" />
     <link rel="preload" href="/fonts/big-shoulders.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/schibsted.woff2" as="font" type="font/woff2" crossorigin />
+    <slot name="head" />
     <script is:inline>
       (function () {
         var d = document.documentElement;
@@ -27,10 +57,10 @@ const { title, description } = Astro.props;
     </script>
   </head>
   <body>
-    <a class="skip-link" href="#main">Kalo te përmbajtja</a>
-    <Header />
+    <a class="skip-link" href="#main">{t.skip}</a>
+    <Header lang={lang} path={path} />
     <main id="main" tabindex="-1"><slot /></main>
-    <Footer />
+    <Footer lang={lang} />
     <script>
       import '../scripts/app';
     </script>

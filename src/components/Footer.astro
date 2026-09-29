@@ -1,19 +1,25 @@
 ---
 import Logo from './Logo.astro';
 import { whatsappHref, callHref } from '../data/shop';
+import { copy, localePath, type Lang } from '../i18n/copy';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const t = copy[lang];
+const home = localePath(lang, '/');
 ---
 <footer class="foot">
   <div class="wrap foot__in">
     <Logo variant="stacked" class="foot__logo" />
-    <nav class="foot__nav" aria-label="Fundi i faqes">
-      <a href="/#cmimet">Çmimet</a>
-      <a href="/#berberet">Berberët</a>
-      <a href="/#ku-jemi">Ku jemi</a>
-      <a href={whatsappHref()} target="_blank" rel="noopener">WhatsApp</a>
-      <a href={callHref()}>Telefono</a>
-      <a href="/brand/">Identiteti i markës</a>
+    <nav class="foot__nav" aria-label={t.nav.footer}>
+      <a href={`${home}#${t.ids.prices}`}>{t.nav.prices}</a>
+      <a href={`${home}#${t.ids.barbers}`}>{t.nav.barbers}</a>
+      <a href={`${home}#${t.ids.visit}`}>{t.nav.visit}</a>
+      <a href={whatsappHref(lang)} target="_blank" rel="noopener">WhatsApp</a>
+      <a href={callHref()}>{t.cta.call}</a>
+      <a href={localePath(lang, '/brand/')}>{t.nav.brand}</a>
     </nav>
-    <p class="small foot__note">Parapamje. Fotot, emrat e berberëve dhe çmimet e tjera shtohen së shpejti.</p>
+    <p class="small foot__note">{t.footer.note}</p>
   </div>
 </footer>
 

@@ -1,7 +1,7 @@
 # Barber Bros: what the shop still has to give us
 
 Barber Bros is a real shop in Fier, Albania, so nothing may be invented. Every fact lives in
-`src/data/shop.ts`. The site is in Albanian (`lang="sq"`).
+`src/data/shop.ts`; every word in `src/i18n/copy.ts`. The site is in Albanian at `/` and English at `/en/`.
 
 ## Confirmed (2026-09-29)
 
@@ -51,7 +51,9 @@ The section images are renders of the same 3D chair.
 ## At launch
 
 1. Fill everything above; set `shop.team.sample` to `false`.
-2. Delete the black "Parapamje" ribbon (`src/components/Header.astro`, first line) and the
-   preview note in `src/components/Footer.astro`.
+2. Delete the "Parapamje / Preview" tag in the top strip (`src/components/Header.astro`) and the
+   preview note in the footer (`footer.note` in `src/i18n/copy.ts`).
 3. Remove `<meta name="robots" content="noindex, nofollow">` from `src/layouts/Base.astro`.
-4. `npm run build`, check `dist/`, deploy only when asked.
+4. Build with the real domain, so link previews, canonical and hreflang URLs point to it:
+   `SITE_URL=https://the-domain npm run build`. Check `dist/`, deploy only when asked.
+5. Keep "© OpenStreetMap contributors" under the map: the map data's licence (ODbL) requires it.

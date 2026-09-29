@@ -1,0 +1,20 @@
+---
+// "Open now" from the shop hours, filled in the browser on Albanian time (scripts/app.ts). Hidden without JS.
+import { copy, type Lang } from '../i18n/copy';
+import { shop } from '../data/shop';
+
+interface Props { lang: Lang; class?: string }
+const { lang, class: cls = '' } = Astro.props;
+const s = copy[lang].status;
+---
+<p class={`status ${cls}`} data-open-status data-open={shop.hours.open} data-close={shop.hours.close} data-t-open={s.open} data-t-before={s.before} data-t-after={s.after} hidden>
+  <span class="status__dot" aria-hidden="true"></span><span data-status-text></span>
+</p>
+
+<style>
+  .status { display: inline-flex; align-items: center; gap: 0.5em; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .status[hidden] { display: none; }
+  /* open: a filled dot; closed: a ring. Two colours only, so the shape carries the state */
+  .status__dot { inline-size: 0.62em; block-size: 0.62em; border-radius: 50%; border: 2px solid currentColor; flex: none; }
+  .status.is-open .status__dot { background: currentColor; }
+</style>

@@ -1,0 +1,106 @@
+---
+// The streets around the shop, drawn at build time from OpenStreetMap data (tools/fetch-map.mjs): barber blue on
+// ink, the river hatched, the shop marked with the mark. The whole map opens the Google Maps listing.
+import data from '../data/map-fier.json';
+import { markPath } from '../data/brand';
+import { row } from '../lib/outline';
+import { shop } from '../data/shop';
+import { copy, type Lang } from '../i18n/copy';
+
+interface Props { lang: Lang; class?: string }
+const { lang, class: cls = '' } = Astro.props;
+const t = copy[lang].visit;
+
+const W = 1000;
+const H = 800;
+const { lat: lat0, lon: lon0 } = shop.address.geo;
+const ky = 165000; // viewBox units per degree of latitude: about 1.5 units a metre, ±270 m in view
+const kx = ky * Math.cos((lat0 * Math.PI) / 180);
+const P = ([lon, lat]: number[]): [number, number] => [W / 2 + (lon - lon0) * kx, H / 2 - (lat - lat0) * ky];
+const r1 = (n: number) => Math.round(n * 10) / 10;
+const toD = (pts: [number, number][]) => pts.map(([x, y], i) => `${i ? 'L' : 'M'}${r1(x)} ${r1(y)}`).join('');
+const inside = ([x, y]: [number, number], m = 0) => x > -m && x < W + m && y > -m && y < H + m;
+
+type Way = { kind: string; type: string; name: string; area: boolean; pts: number[][] };
+const ways = (data.ways as Way[]).map((w) => ({ ...w, xy: w.pts.map(P) })).filter((w) => w.xy.some((p) => inside(p, 60)));
+
+// strokes by road class, thin first so the main roads sit on top
+const widths: Record<string, number> = { footway: 2.6, path: 2.6, steps: 2.6, cycleway: 2.6, track: 2.6, service: 5, pedestrian: 7, living_street: 7.5, residential: 9, unclassified: 9, tertiary: 15, secondary: 15, primary: 17, trunk: 17 };
+const roadGroups = [...new Set(Object.values(widths))]
+  .sort((a, b) => a - b)
+  .map((w) => ({ w, d: ways.filter((r) => r.kind === 'road' && (widths[r.type] ?? 5) === w).map((r) => toD(r.xy)).join('') }))
+  .filter((g) => g.d);
+const waterAreas = ways.filter((w) => w.kind === 'water' && w.area).map((w) => `${toD(w.xy)}Z`).join('');
+const waterLines = ways.filter((w) => w.kind === 'water' && !w.area).map((w) => toD(w.xy)).join('');
+
+// labels ride on the longest stretch of a named way that stays in view, read left to right
+function stretch(xy: [number, number][]) {
+  let best: [number, number][] = [];
+  let run: [number, number][] = [];
+  for (const p of xy) {
+    if (inside(p, -30)) run.push(p);
+    else run = [];
+    if (run.length > best.length) best = [...run];
+  }
+  if (best.length > 1 && best[best.length - 1][0] < best[0][0]) best.reverse();
+  return best;
+}
+const len = (xy: [number, number][]) => xy.slice(1).reduce((s, p, i) => s + Math.hypot(p[0] - xy[i][0], p[1] - xy[i][1]), 0);
+const labelFor = (re: RegExp, text: string, water = false) => {
+  const pick = ways
+    .filter((w) => re.test(w.name) && (water ? w.kind === 'water' : w.kind === 'road'))
+    .map((w) => stretch(w.xy))
+    .sort((a, b) => len(b) - len(a))[0];
+  return pick && len(pick) > text.length * 21 ? { d: toD(pick), text, water } : null;
+};
+const labels = [labelFor(/Jakov Xoxa/, 'JAKOV XOXA'), labelFor(/Adriatiku/, 'ADRIATIKU'), labelFor(/Gjanic/, 'LUMI I GJANICËS', true)].filter(Boolean) as { d: string; text: string; water: boolean }[];
+
+// the name beside the pin, as outlines
+const word = row(['Barber', 'Bros'], 0.18, -0.005);
+const wordH = 42;
+const ws = wordH / word.height;
+---
+<figure class={`map ${cls}`}>
+  <a class="map__link" href={shop.address.mapUrl} target="_blank" rel="noopener" aria-label={t.mapLabel}>
+    <svg viewBox={`0 0 ${W} ${H}`} aria-hidden="true">
+      <defs>
+        <pattern id="map-hatch" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <rect class="map__ink" width="9" height="9" />
+          <rect class="map__blue" width="2.6" height="9" />
+        </pattern>
+        {labels.map((l, i) => <path id={`map-l${i}`} d={l.d} />)}
+      </defs>
+      <rect class="map__ink" width={W} height={H} />
+      {waterAreas && <path class="map__water-area" d={waterAreas} />}
+      {waterLines && <path class="map__water-line" d={waterLines} />}
+      {roadGroups.map((g) => <path class="map__road" d={g.d} stroke-width={g.w} />)}
+      {labels.map((l, i) => (
+        <text class={`map__label${l.water ? ' map__label--water' : ''}`}><textPath href={`#map-l${i}`} startOffset="50%" text-anchor="middle">{l.text}</textPath></text>
+      ))}
+      <g transform={`translate(${W / 2} ${H / 2})`}>
+        <circle class="map__pin" r="40" />
+        <path class="map__ink" d={markPath} fill-rule="evenodd" transform="scale(0.48) translate(-50 -50)" />
+        <path class="map__name" d={word.d} transform={`translate(54 ${-wordH / 2}) scale(${ws.toFixed(5)})`} stroke-width={(9 / ws).toFixed(1)} />
+      </g>
+    </svg>
+  </a>
+  <figcaption class="map__credit small">{t.mapCredit} © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors</figcaption>
+</figure>
+
+<style>
+  .map { margin: 0; display: grid; gap: 0.6rem; }
+  .map__link { display: block; border: 3px solid var(--ink); background: var(--ink); }
+  .map__link svg { display: block; inline-size: 100%; block-size: auto; aspect-ratio: 1000 / 800; }
+  .map__ink { fill: var(--ink); }
+  .map__blue { fill: var(--blue); }
+  .map__road { fill: none; stroke: var(--blue); stroke-linecap: round; stroke-linejoin: round; }
+  .map__water-area { fill: url(#map-hatch); }
+  .map__water-line { fill: none; stroke: url(#map-hatch); stroke-width: 26; stroke-linecap: round; stroke-linejoin: round; }
+  .map__label { font-family: var(--display); font-weight: 800; font-size: 30px; letter-spacing: 0.06em; fill: var(--blue); stroke: var(--ink); stroke-width: 9px; stroke-linejoin: round; paint-order: stroke; dominant-baseline: central; }
+  .map__label--water { font-size: 26px; }
+  .map__pin { fill: var(--blue); stroke: var(--ink); stroke-width: 5px; }
+  /* stroke width is set in the outline's own units (it is scaled down): a 7-unit ink halo */
+  .map__name { fill: var(--blue); stroke: var(--ink); stroke-linejoin: round; paint-order: stroke; }
+  .map__credit { color: var(--fg-2); }
+  .map__credit a { color: inherit; }
+</style>

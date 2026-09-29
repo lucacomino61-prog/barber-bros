@@ -1,27 +1,54 @@
 ---
 import Logo from './Logo.astro';
 import Icon from './Icon.astro';
+import OpenStatus from './OpenStatus.astro';
 import { shop, whatsappHref, callHref } from '../data/shop';
+import { copy, localePath, type Lang } from '../i18n/copy';
+
+interface Props { lang: Lang; path?: string }
+const { lang, path = '/' } = Astro.props;
+const t = copy[lang];
+const home = localePath(lang, '/');
 ---
-<p class="ribbon">Parapamje. Fotot, emrat e berberëve dhe çmimet e tjera shtohen së shpejti.</p>
+<div class="topbar">
+  <div class="topbar__in wrap">
+    <OpenStatus lang={lang} />
+    <span class="topbar__preview">{t.bar.preview}</span>
+    <nav class="langs" aria-label={t.bar.language}>
+      {(['sq', 'en'] as const).map((l) => (
+        <a href={localePath(l, path)} hreflang={l} lang={l} aria-current={l === lang ? 'page' : undefined}><span aria-hidden="true">{l.toUpperCase()}</span><span class="visually-hidden">{t.bar.names[l]}</span></a>
+      ))}
+    </nav>
+  </div>
+</div>
 <header class="bar">
   <div class="bar__in wrap">
-    <a href="/" class="bar__logo" aria-label="Barber Bros, faqja kryesore"><Logo label="Barber Bros" /></a>
-    <nav class="bar__nav" aria-label="Seksionet">
-      <a href="/#cmimet">Çmimet</a>
-      <a href="/#berberet">Berberët</a>
-      <a href="/#ku-jemi">Ku jemi</a>
+    <a href={home} class="bar__logo" aria-label={t.nav.home}><Logo label="Barber Bros" /></a>
+    <nav class="bar__nav" aria-label={t.nav.label}>
+      <a href={`${home}#${t.ids.prices}`}>{t.nav.prices}</a>
+      <a href={`${home}#${t.ids.barbers}`}>{t.nav.barbers}</a>
+      <a href={`${home}#${t.ids.visit}`}>{t.nav.visit}</a>
     </nav>
     <div class="bar__act">
-      <a class="pill pill--solid" href={whatsappHref()} target="_blank" rel="noopener"><Icon name="whatsapp-logo" /><span>Rezervo<span class="bar__long"> në WhatsApp</span></span><span class="visually-hidden"> (hap WhatsApp)</span></a>
-      <a class="pill bar__call" href={callHref()} aria-label={`Telefono ${shop.phone}`}><Icon name="phone" /><span class="bar__long">Telefono</span></a>
-      <button class="pill switch bar__stop" type="button" aria-pressed="false" data-motion-toggle><span>Ndalo<span class="bar__long"> animacionet</span></span><span class="track" aria-hidden="true"></span></button>
+      <a class="pill pill--solid" href={whatsappHref(lang)} target="_blank" rel="noopener"><Icon name="whatsapp-logo" /><span>{t.cta.book}<span class="bar__long">{t.cta.bookLong}</span></span><span class="visually-hidden">{t.cta.opens}</span></a>
+      <a class="pill bar__call" href={callHref()} aria-label={`${t.cta.call} ${shop.phone}`}><Icon name="phone" /><span class="bar__long">{t.cta.call}</span></a>
+      <button class="pill switch bar__stop" type="button" aria-pressed="false" data-motion-toggle><span>{t.cta.stop}<span class="bar__long">{t.cta.stopLong}</span></span><span class="track" aria-hidden="true"></span></button>
     </div>
   </div>
 </header>
 
 <style>
-  .ribbon { background: var(--ink); color: var(--blue); text-align: center; font-size: 0.82rem; font-weight: 600; padding: 0.45rem var(--gutter); }
+  /* the ink strip: open-now status, preview tag, language switch */
+  .topbar { background: var(--ink); color: var(--blue); font-size: 0.85rem; }
+  .topbar__in { display: flex; align-items: center; gap: var(--space-s); min-block-size: 44px; }
+  .topbar__preview { margin-inline-start: auto; font-family: var(--display); font-weight: 800; font-size: 0.8rem; letter-spacing: 0.06em; text-transform: uppercase; border: 1.5px solid currentColor; padding: 0.05rem 0.45rem; }
+  .langs { display: flex; margin-inline-end: -0.7rem; }
+  .langs a { display: inline-grid; place-items: center; min-inline-size: 44px; min-block-size: 44px; font-family: var(--display); font-weight: 800; font-size: 1rem; letter-spacing: 0.04em; text-decoration: none; }
+  .langs a[aria-current] { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 0.3em; }
+  @media (hover: hover) and (pointer: fine) { .langs a:not([aria-current]):hover { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 0.3em; } }
+  .topbar :focus-visible { outline-color: var(--blue); box-shadow: 0 0 0 7px var(--ink); }
+  @media (max-width: 520px) { .topbar__preview { display: none; } .langs { margin-inline-start: auto; } }
+
   .bar { position: sticky; top: 0; z-index: 50; background: var(--blue); border-block-end: 2px solid transparent; transition: border-color 200ms ease; }
   :global(html[data-scrolled]) .bar { border-block-end-color: var(--ink); }
   .bar__in { display: flex; align-items: center; gap: var(--space-s); min-block-size: var(--header-h); }

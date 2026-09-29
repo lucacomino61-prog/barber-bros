@@ -1,17 +1,20 @@
 ---
+// One page for both languages: Albanian first, English under it.
 import Base from '../layouts/Base.astro';
 import Logo from '../components/Logo.astro';
 import Icon from '../components/Icon.astro';
 import { whatsappHref } from '../data/shop';
 ---
-<Base title="Nuk u gjet, Barber Bros" description="Kjo faqe nuk është këtu. Karrigia po.">
+<Base lang="sq" title="Nuk u gjet, Barber Bros" description="Kjo faqe nuk është këtu. Karrigia po.">
   <section class="wrap nf">
     <Logo variant="mark" label="" class="nf__mark" />
     <h1 class="poster nf__t">Karrige e gabuar</h1>
     <p class="lead">Këtu nuk ka asgjë. Dyqani është një klik larg.</p>
+    <p class="nf__en" lang="en">Wrong chair: nothing at this address. The shop is one click away.</p>
     <div class="nf__act">
       <a class="pill pill--solid" href="/"><Icon name="arrow-right" /> Kthehu te dyqani</a>
-      <a class="pill" href={whatsappHref()} target="_blank" rel="noopener"><Icon name="whatsapp-logo" /> Rezervo në WhatsApp<span class="visually-hidden"> (hap WhatsApp)</span></a>
+      <a class="pill" href="/en/" lang="en"><Icon name="arrow-right" /> Back to the shop</a>
+      <a class="pill" href={whatsappHref('sq')} target="_blank" rel="noopener"><Icon name="whatsapp-logo" /> WhatsApp<span class="visually-hidden"> (hap WhatsApp)</span></a>
     </div>
   </section>
 </Base>
@@ -20,5 +23,6 @@ import { whatsappHref } from '../data/shop';
   .nf { display: grid; justify-items: start; gap: var(--space-m); padding-block: var(--space-2xl); }
   .nf :global(.nf__mark) { block-size: 6rem; }
   .nf__t { font-size: clamp(4rem, 2rem + 12vw, 13rem); }
+  .nf__en { font-size: var(--step-1); max-inline-size: 44ch; }
   .nf__act { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 </style>
