@@ -1,0 +1,13 @@
+---
+// Phosphor icons (regular weight), inlined at build time. One family, one weight across the site.
+import fs from 'node:fs';
+import path from 'node:path';
+
+interface Props { name: string; size?: string; label?: string }
+const { name, size = '1em', label } = Astro.props;
+const file = path.resolve(process.cwd(), 'node_modules/@phosphor-icons/core/assets/regular', `${name}.svg`);
+let svg = fs.readFileSync(file, 'utf8');
+const a11y = label ? `role="img" aria-label="${label}"` : 'aria-hidden="true" focusable="false"';
+svg = svg.replace('<svg ', `<svg ${a11y} width="${size}" height="${size}" class="icon" `);
+---
+<Fragment set:html={svg} />

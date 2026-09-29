@@ -1,0 +1,16 @@
+---
+// Type on jar-blue plates, one plate per line, so a caption stays readable when the chair passes behind it.
+// The plates live in their own layer under the text: with tight leading, a plate painted inline would cover
+// the foot of the line above.
+interface Props { text: string }
+const { text } = Astro.props;
+---
+<span class="slug"><span class="slug__plates" aria-hidden="true"><span>{text}</span></span><span>{text}</span></span>
+
+<style>
+  .slug { display: grid; }
+  .slug > * { grid-area: 1 / 1; }
+  /* the plate layer's glyphs are only there to size the plates: fill them transparent, keep a real text colour */
+  .slug__plates { -webkit-text-fill-color: transparent; user-select: none; }
+  .slug__plates > span { background: var(--blue); box-shadow: 0.14em 0 0 var(--blue), -0.14em 0 0 var(--blue); -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+</style>

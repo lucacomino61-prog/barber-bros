@@ -1,0 +1,38 @@
+---
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+interface Props { title: string; description: string }
+const { title, description } = Astro.props;
+---
+<!doctype html>
+<html lang="sq">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="theme-color" content="#1f9ad6" />
+    <link rel="icon" href="/brand/favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href="/fonts/big-shoulders.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/schibsted.woff2" as="font" type="font/woff2" crossorigin />
+    <script is:inline>
+      (function () {
+        var d = document.documentElement;
+        try { if (localStorage.getItem('bb:motion') === 'off') d.dataset.motion = 'off'; } catch (e) {}
+        if (d.dataset.motion !== 'off' && !matchMedia('(prefers-reduced-motion: reduce)').matches) d.classList.add('js-reveal', 'js-motion');
+      })();
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Kalo te përmbajtja</a>
+    <Header />
+    <main id="main" tabindex="-1"><slot /></main>
+    <Footer />
+    <script>
+      import '../scripts/app';
+    </script>
+  </body>
+</html>

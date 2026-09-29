@@ -1,0 +1,32 @@
+---
+// The Barber Bros mark: two geometric B's mirrored on one shared stem (the "bros"), drawn as exact paths.
+// Stem 12 units wide, bowls 10 units thick, top bowl smaller than the bottom one, as in a B.
+// The wordmark is drawn as Big Shoulders outlines (lib/outline.ts), never as live type.
+import { markPath } from '../data/brand';
+import { row, block, upm } from '../lib/outline';
+
+interface Props { variant?: 'mark' | 'horizontal' | 'stacked'; label?: string; class?: string }
+const { variant = 'horizontal', label = 'Barber Bros', class: cls = '' } = Astro.props;
+// label="" means decorative: hidden from assistive tech instead of an image with an empty name
+const a11y = label ? { role: 'img', 'aria-label': label } : { 'aria-hidden': 'true' };
+// sizes in em match the type the outlines replace: 0.86em beside the mark, 1em under it
+const word = variant === 'stacked' ? block(['Barber', 'Bros'], 0.84, -0.005) : row(['Barber', 'Bros'], 0.18, -0.005);
+const h = `${((word.height / upm) * (variant === 'stacked' ? 1 : 0.86)).toFixed(4)}em`;
+---
+{variant === 'mark' ? (
+  <svg class={`bb-mark ${cls}`} viewBox="14 9 72 82" {...a11y}><path d={markPath} fill="currentColor" fill-rule="evenodd" /></svg>
+) : (
+  <span class={`bb-logo bb-logo--${variant} ${cls}`} {...a11y}>
+    <svg class="bb-mark" viewBox="14 9 72 82" aria-hidden="true"><path d={markPath} fill="currentColor" fill-rule="evenodd" /></svg>
+    <svg class="bb-word" viewBox={`0 0 ${word.width.toFixed(1)} ${word.height.toFixed(1)}`} style={`--h:${h}`} aria-hidden="true"><path d={word.d} fill="currentColor" /></svg>
+  </span>
+)}
+
+<style>
+  .bb-mark { block-size: 1em; inline-size: auto; aspect-ratio: 72 / 82; }
+  .bb-logo { display: inline-flex; align-items: center; gap: 0.32em; line-height: 1; }
+  .bb-logo .bb-mark { block-size: 1.02em; }
+  .bb-word { block-size: var(--h); inline-size: auto; flex: none; }
+  .bb-logo--stacked { flex-direction: column; gap: 0.16em; }
+  .bb-logo--stacked .bb-mark { block-size: 1.6em; }
+</style>

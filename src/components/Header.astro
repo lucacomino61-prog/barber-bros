@@ -1,0 +1,42 @@
+---
+import Logo from './Logo.astro';
+import Icon from './Icon.astro';
+import { shop, whatsappHref, callHref } from '../data/shop';
+---
+<p class="ribbon">Parapamje. Fotot, emrat e berberëve dhe çmimet e tjera shtohen së shpejti.</p>
+<header class="bar">
+  <div class="bar__in wrap">
+    <a href="/" class="bar__logo" aria-label="Barber Bros, faqja kryesore"><Logo label="Barber Bros" /></a>
+    <nav class="bar__nav" aria-label="Seksionet">
+      <a href="/#cmimet">Çmimet</a>
+      <a href="/#berberet">Berberët</a>
+      <a href="/#ku-jemi">Ku jemi</a>
+    </nav>
+    <div class="bar__act">
+      <a class="pill pill--solid" href={whatsappHref()} target="_blank" rel="noopener"><Icon name="whatsapp-logo" /><span>Rezervo<span class="bar__long"> në WhatsApp</span></span><span class="visually-hidden"> (hap WhatsApp)</span></a>
+      <a class="pill bar__call" href={callHref()} aria-label={`Telefono ${shop.phone}`}><Icon name="phone" /><span class="bar__long">Telefono</span></a>
+      <button class="pill switch bar__stop" type="button" aria-pressed="false" data-motion-toggle><span>Ndalo<span class="bar__long"> animacionet</span></span><span class="track" aria-hidden="true"></span></button>
+    </div>
+  </div>
+</header>
+
+<style>
+  .ribbon { background: var(--ink); color: var(--blue); text-align: center; font-size: 0.82rem; font-weight: 600; padding: 0.45rem var(--gutter); }
+  .bar { position: sticky; top: 0; z-index: 50; background: var(--blue); border-block-end: 2px solid transparent; transition: border-color 200ms ease; }
+  :global(html[data-scrolled]) .bar { border-block-end-color: var(--ink); }
+  .bar__in { display: flex; align-items: center; gap: var(--space-s); min-block-size: var(--header-h); }
+  .bar__logo { display: inline-flex; align-items: center; min-block-size: 44px; min-inline-size: 44px; font-size: 1.9rem; text-decoration: none; margin-inline-end: auto; }
+  .bar__nav { display: flex; gap: 1.4rem; font-family: var(--display); font-weight: 800; font-size: 1.15rem; text-transform: uppercase; letter-spacing: 0.02em; }
+  .bar__nav a { text-decoration: none; min-block-size: 44px; display: inline-flex; align-items: center; }
+  @media (hover: hover) and (pointer: fine) { .bar__nav a:hover { text-decoration: underline; text-decoration-thickness: 2px; } }
+  .bar__act { display: flex; gap: 0.4rem; align-items: center; }
+  @media (max-width: 1000px) { .bar__nav { display: none; } }
+  @media (max-width: 640px) {
+    .bar__logo { font-size: 1.45rem; }
+    .bar__long { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+    .bar__call { inline-size: 44px; padding: 0; }
+    .bar__stop { padding-inline: 0.75rem; }
+    .bar__act .pill { padding-inline: 0.85rem; }
+  }
+  @media (max-width: 400px) { .bar__logo :global(.bb-word) { display: none; } }
+</style>

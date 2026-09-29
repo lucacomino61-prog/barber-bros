@@ -1,0 +1,29 @@
+---
+import Logo from './Logo.astro';
+import { whatsappHref, callHref } from '../data/shop';
+---
+<footer class="foot">
+  <div class="wrap foot__in">
+    <Logo variant="stacked" class="foot__logo" />
+    <nav class="foot__nav" aria-label="Fundi i faqes">
+      <a href="/#cmimet">Çmimet</a>
+      <a href="/#berberet">Berberët</a>
+      <a href="/#ku-jemi">Ku jemi</a>
+      <a href={whatsappHref()} target="_blank" rel="noopener">WhatsApp</a>
+      <a href={callHref()}>Telefono</a>
+      <a href="/brand/">Identiteti i markës</a>
+    </nav>
+    <p class="small foot__note">Parapamje. Fotot, emrat e berberëve dhe çmimet e tjera shtohen së shpejti.</p>
+  </div>
+</footer>
+
+<style>
+  .foot { margin-block-start: var(--space-section); background: var(--ink); color: var(--blue); }
+  .foot__in { display: grid; gap: var(--space-l); padding-block: var(--space-2xl); justify-items: start; }
+  .foot :global(.foot__logo) { font-size: clamp(3rem, 2rem + 5vw, 6rem); }
+  .foot__nav { display: flex; flex-wrap: wrap; gap: 0.25rem 1.6rem; font-family: var(--display); font-weight: 800; font-size: 1.35rem; text-transform: uppercase; }
+  .foot__nav a { text-decoration: none; min-block-size: 44px; min-inline-size: 44px; display: inline-flex; align-items: center; }
+  @media (hover: hover) and (pointer: fine) { .foot__nav a:hover { text-decoration: underline; } }
+  .foot__note { max-inline-size: 60ch; }
+  .foot :focus-visible { outline-color: var(--blue); box-shadow: 0 0 0 7px var(--ink); }
+</style>
