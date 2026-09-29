@@ -29,9 +29,21 @@ export const shop = {
     { id: 'mjeker', name: { sq: 'Rregullim mjekre', en: 'Beard trim' }, phrase: { sq: 'një rregullim mjekre', en: 'a beard trim' } },
     { id: 'rruajtje', name: { sq: 'Rruajtje me peshqir të nxehtë', en: 'Hot-towel shave' }, phrase: { sq: 'një rruajtje me peshqir të nxehtë', en: 'a hot-towel shave' } },
   ] as Service[],
-  team: { sample: true, count: 2 },
-  instagram: null as string | null,
+  /** the barbers and their booking numbers, as the shop lists them in its Instagram bio (read 2026-09-29);
+   *  handles from the posts that tag them. No portraits yet. Only the shop number is confirmed on WhatsApp. */
+  team: [
+    { name: 'Edison', phone: '+355 69 473 7557', instagram: 'edison_shametaj' },
+    { name: 'Taulant', phone: '+355 69 299 1511', instagram: null },
+    { name: 'Danieli', phone: '+355 68 328 8053', instagram: 'daniel.muratii' },
+  ] as { name: string; phone: string; instagram: string | null }[],
+  /** the shop's accounts, linked from its Google results */
+  instagram: 'barber.___.bros',
+  tiktok: 'barber.bros8',
 };
+
+export const instagramUrl = (handle: string) => `https://www.instagram.com/${handle}/`;
+export const tiktokUrl = (handle: string) => `https://www.tiktok.com/@${handle}`;
+export const telHref = (phone: string) => `tel:${phone.replace(/[^+\d]/g, '')}`;
 
 /** lek after the number, as on Albanian price boards */
 export const lek = (n: number) => `${n} L`;

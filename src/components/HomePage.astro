@@ -6,7 +6,8 @@ import Logo from './Logo.astro';
 import Slug from './Slug.astro';
 import OpenStatus from './OpenStatus.astro';
 import StreetMap from './StreetMap.astro';
-import { shop, lek, whatsappHref, callHref } from '../data/shop';
+import { shop, lek, whatsappHref, callHref, instagramUrl, tiktokUrl, telHref } from '../data/shop';
+import { gallery, postUrl } from '../data/gallery';
 import { copy, localePath, listJoin, type Lang } from '../i18n/copy';
 import { block, upm } from '../lib/outline';
 
@@ -49,6 +50,7 @@ const ld = {
   address: { '@type': 'PostalAddress', streetAddress: shop.address.line, addressLocality: 'Fier', addressCountry: 'AL' },
   geo: { '@type': 'GeoCoordinates', latitude: shop.address.geo.lat, longitude: shop.address.geo.lon },
   hasMap: shop.address.mapUrl,
+  sameAs: [instagramUrl(shop.instagram), tiktokUrl(shop.tiktok)],
   openingHoursSpecification: [{ '@type': 'OpeningHoursSpecification', dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'], opens: shop.hours.open, closes: shop.hours.close }],
   makesOffer: priced.map((s) => ({ '@type': 'Offer', itemOffered: { '@type': 'Service', name: s.name[lang] }, price: String(s.price), priceCurrency: 'ALL' })),
 };
@@ -111,6 +113,30 @@ const ld = {
     </figure>
   </section>
 
+  <section class="section wrap work" id={t.ids.work} aria-labelledby="work-title">
+    <div class="work__head">
+      <h2 id="work-title" class="h2 reveal">{t.work.title}</h2>
+      <p class="work__intro reveal">{t.work.intro}</p>
+    </div>
+    <ul class="shots" role="list">
+      {gallery.map((s, i) => (
+        <li class="reveal" style={`--i:${i % 4}`}>
+          <a class="shot" href={postUrl(s)} target="_blank" rel="noopener">
+            <img src={`/img/ig/${s.id}.webp`} alt={s.alt[lang]} width="640" height="800" loading="lazy" decoding="async" />
+            <span class="visually-hidden">{t.work.opens}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+    <div class="work__foot">
+      <p class="small">{t.work.credit} <a href={instagramUrl(shop.instagram)} target="_blank" rel="noopener">@{shop.instagram}</a></p>
+      <div class="work__act">
+        <a class="pill pill--solid" href={instagramUrl(shop.instagram)} target="_blank" rel="noopener"><Icon name="instagram-logo" /> {t.work.follow}<span class="visually-hidden">{t.work.opens}</span></a>
+        <a class="pill" href={tiktokUrl(shop.tiktok)} target="_blank" rel="noopener"><Icon name="tiktok-logo" /> TikTok</a>
+      </div>
+    </div>
+  </section>
+
   <section class="section wrap book" id={t.ids.book} aria-labelledby="book-title">
     <div class="book__main">
       <h2 id="book-title" class="h2 reveal">{b.title}</h2>
@@ -157,13 +183,17 @@ const ld = {
   <section class="section wrap barbers" id={t.ids.barbers} aria-labelledby="barbers-title">
     <h2 id="barbers-title" class="h2 reveal">{t.barbers.title}</h2>
     <div class="barbers__grid">
-      {Array.from({ length: shop.team.count }, (_, i) => (
+      {shop.team.map((m, i) => (
         <figure class="frame reveal" style={`--i:${i}`}>
           <div class="frame__photo">
             <Logo variant="mark" label="" class="frame__mark" />
             <span class="small">{t.barbers.photo}</span>
           </div>
-          <figcaption><span class="frame__name">{t.barbers.name.replace('{n}', String(i + 1))}</span> <span class="tag">{t.barbers.soon}</span></figcaption>
+          <figcaption>
+            <span class="frame__name">{m.name}</span>
+            {m.instagram && <a class="frame__ig" href={instagramUrl(m.instagram)} target="_blank" rel="noopener">@{m.instagram}</a>}
+            <a class="pill frame__call" href={telHref(m.phone)} aria-label={`${t.barbers.callName.replace('{name}', m.name)}, ${m.phone}`}><Icon name="phone" /> {m.phone}</a>
+          </figcaption>
         </figure>
       ))}
     </div>
@@ -189,6 +219,8 @@ const ld = {
         <a class="pill pill--solid" href={whatsappHref(lang)} target="_blank" rel="noopener"><Icon name="whatsapp-logo" /> {t.cta.book}{t.cta.bookLong}<span class="visually-hidden">{t.cta.opens}</span></a>
         <a class="pill" href={callHref()}><Icon name="phone" /> {shop.phone}</a>
         <a class="pill" href={shop.address.mapUrl} target="_blank" rel="noopener"><Icon name="map-trifold" /> {t.visit.map}<span class="visually-hidden">{t.visit.mapOpens}</span></a>
+        <a class="pill" href={instagramUrl(shop.instagram)} target="_blank" rel="noopener"><Icon name="instagram-logo" /> Instagram</a>
+        <a class="pill" href={tiktokUrl(shop.tiktok)} target="_blank" rel="noopener"><Icon name="tiktok-logo" /> TikTok</a>
       </div>
     </div>
     <StreetMap lang={lang} class="reveal" />
@@ -277,13 +309,29 @@ const ld = {
   .book__text { background: var(--ink); color: var(--blue); padding: 1rem 1.25rem; font-size: var(--step-1); line-height: 1.45; max-inline-size: 42ch; min-block-size: 4.5em; }
   .book__send { justify-self: start; }
 
+  /* ---------- our work: the shop's Instagram ---------- */
+  .work__head { display: grid; gap: var(--space-m); }
+  .work__intro { font-size: var(--step-1); line-height: 1.4; max-inline-size: 46ch; }
+  .shots { list-style: none; padding: 0; margin: var(--space-xl) 0 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(0.5rem, 1.2vw, 1rem); }
+  @media (min-width: 900px) { .shots { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  .shot { display: block; overflow: hidden; border: 3px solid var(--ink); background: var(--ink); color: var(--blue); }
+  .shot img { display: block; inline-size: 100%; block-size: auto; aspect-ratio: 4 / 5; object-fit: cover; transition: transform 600ms var(--ease-out); }
+  @media (hover: hover) and (pointer: fine) { .shot:hover img { transform: scale(1.04); } }
+  .work__foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-m); margin-block-start: var(--space-l); }
+  .work__foot p { color: var(--fg-2); }
+  .work__foot p a { display: inline-flex; align-items: center; min-block-size: 44px; color: var(--ink); font-weight: 600; }
+  .work__act { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
   /* ---------- the barbers ---------- */
   .barbers__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(18rem, 100%), 1fr)); gap: var(--space-l); margin-block-start: var(--space-xl); }
-  .frame { margin: 0; display: grid; gap: 0.75rem; }
-  .frame__photo { aspect-ratio: 4 / 5; background: var(--ink); color: var(--blue); display: grid; place-content: center; justify-items: center; gap: 1rem; }
-  .frame__photo :global(.frame__mark) { block-size: 5rem; opacity: 0.9; }
-  .frame figcaption { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
-  .frame__name { font-family: var(--display); font-weight: 900; text-transform: uppercase; font-size: 1.8rem; line-height: 1; }
+  .frame { margin: 0; display: grid; gap: 0.75rem; align-content: start; }
+  /* landscape while the portraits are missing; 4:5 once the shop sends them */
+  .frame__photo { aspect-ratio: 3 / 2; background: var(--ink); color: var(--blue); display: grid; place-content: center; justify-items: center; gap: 0.8rem; }
+  .frame__photo :global(.frame__mark) { block-size: 4rem; opacity: 0.9; }
+  .frame figcaption { display: grid; justify-items: start; gap: 0.5rem; }
+  .frame__name { font-family: var(--display); font-weight: 900; text-transform: uppercase; font-size: clamp(2rem, 1.5rem + 1.5vw, 2.8rem); line-height: 1; }
+  .frame__ig { display: inline-flex; align-items: center; min-block-size: 44px; font-weight: 600; }
+  .frame__call { margin-block-start: 0.2rem; }
 
   /* ---------- visit ---------- */
   .visit { display: grid; gap: var(--space-xl) clamp(2rem, 5vw, 6rem); align-items: center; }

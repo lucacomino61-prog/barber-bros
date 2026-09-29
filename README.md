@@ -4,6 +4,7 @@ Brand and website for Barber Bros, a barbershop in Fier, Albania. Albanian at `/
 
 - **The chair scene:** a black leather barber chair drawn in three.js. Scrolling takes the camera once round it, while captions tell the cut, the shave and "Karrigia jote të pret". On a computer the chair can be grabbed and turned; it settles back on its angle.
 - **Booking in one tap:** every "Rezervo" button opens WhatsApp with the message typed; "Telefono" calls the shop. The "Merr termin" helper writes the message from a service, a day and a time; the barber confirms in the chat.
+- **Punët tona:** work from the shop's Instagram ([@barber.___.bros](https://www.instagram.com/barber.___.bros/)), each photo linking to its post; the barbers Edison, Taulant and Danieli with their numbers; Instagram and [TikTok](https://www.tiktok.com/@barber.bros8) linked.
 - **Open now:** the top strip says whether the shop is open, on Albanian time, and switches SQ / EN.
 - **Map:** the streets around the shop, drawn from OpenStreetMap in the brand colours.
 - **Link previews and Google:** a share image per language, and the shop as a `HairSalon` in schema.org data.
@@ -26,6 +27,7 @@ npm run preview   # the built site on http://127.0.0.1:3691
 | --- | --- |
 | Shop facts: address, phone, WhatsApp, hours, services, prices | `src/data/shop.ts` |
 | Every word, Albanian and English | `src/i18n/copy.ts` |
+| The Instagram work photos and their posts | `src/data/gallery.ts`, `public/img/ig/` |
 | The pages (one component per page, both languages) | `src/components/HomePage.astro`, `src/components/BrandPage.astro` |
 | Colours and the mark's geometry | `src/data/brand.ts` |
 | The chair, its scroll camera and the drag | `src/scripts/chair.ts` |

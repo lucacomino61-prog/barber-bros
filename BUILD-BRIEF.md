@@ -4,7 +4,7 @@
 - **Colours, two only:**
   - Jar Blue `#1F9AD6` (Barbicide jar blue) is the drenched page ground.
   - Ink `#0C0F12` is for type, the chair and controls.
-  - Tones come from color-mix of the two. Chrome and white appear only inside the 3D render. Ink on blue gives about 6:1.
+  - Tones come from color-mix of the two. Gold and white appear only inside the 3D render and in photographs. Ink on blue gives about 6:1.
 - **Type:**
   - Big Shoulders Display (variable 100-900, public/fonts/big-shoulders.woff2) for poster, headings, prices and labels: uppercase, weight 800-900, tracking -0.01em.
   - Schibsted Grotesk (public/fonts/schibsted.woff2) for text, 400-600.
@@ -28,13 +28,13 @@
 
 ## 3D chair (procedural three.js)
 - **Parts:**
-  - hydraulic base: a lathe profile in chrome
-  - pump pedal, footrest (chrome bar + plate)
+  - hydraulic base: a lathe profile in gold
+  - pump pedal, footrest (gold bar + plate)
   - seat cushion and backrest: RoundedBoxGeometry in black leather, MeshPhysicalMaterial with sheen, roughness 0.45
-  - headrest on a chrome rod
-  - armrests: leather on chrome supports
+  - headrest on a gold rod
+  - armrests: leather on gold supports
   - piping/tufting: horizontal grooves as thin inset boxes
-- **Lighting:** RoomEnvironment (PMREM) for the chrome, a key light plus a blue-tinted rim; a soft contact shadow as a radial-gradient plane. Background is transparent, so the blue page shows through.
+- **Lighting:** RoomEnvironment (PMREM) for the gold metal, a key light plus a blue-tinted rim; a soft contact shadow as a radial-gradient plane. Background is transparent, so the blue page shows through.
 - **Performance:** pixel ratio capped at 1.75, antialias on, geometry under 60k triangles, and rendering only while in view. The renderer runs from gsap.ticker (one rAF owner).
 - **Fallback:** public/img/chair-*.webp renders captured with headless Chrome.
 

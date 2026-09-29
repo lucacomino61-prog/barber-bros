@@ -21,7 +21,8 @@ function buildChair() {
   const g = new THREE.Group();
   const leather = new THREE.MeshPhysicalMaterial({ color: 0x0a0c0f, roughness: 0.52, metalness: 0, sheen: 0.55, sheenColor: new THREE.Color(0x1e2a34), sheenRoughness: 0.6, clearcoat: 0.12, clearcoatRoughness: 0.5 });
   // no per-material envMapIntensity: with scene.environment set, three.js uses scene.environmentIntensity instead
-  const chrome = new THREE.MeshStandardMaterial({ color: 0xe6edf2, metalness: 1, roughness: 0.14 });
+  // polished gold, like the shop's own chairs (black leather on gold frames)
+  const gold = new THREE.MeshStandardMaterial({ color: 0xf5c872, metalness: 1, roughness: 0.2 });
   const add = (geo: THREE.BufferGeometry, mat: THREE.Material, x = 0, y = 0, z = 0, parent: THREE.Object3D = g) => {
     const m = new THREE.Mesh(geo, mat);
     m.position.set(x, y, z);
@@ -30,27 +31,27 @@ function buildChair() {
   };
   const rod = (a: THREE.Vector3, b: THREE.Vector3, r: number, parent: THREE.Object3D = g) => {
     const len = a.distanceTo(b);
-    const m = add(new THREE.CylinderGeometry(r, r, len, 20), chrome, (a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2, parent);
+    const m = add(new THREE.CylinderGeometry(r, r, len, 20), gold, (a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2, parent);
     m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), b.clone().sub(a).normalize());
     return m;
   };
 
   // hydraulic base
   const profile = [[0, 0], [0.33, 0], [0.35, 0.015], [0.34, 0.035], [0.16, 0.075], [0.11, 0.12], [0.085, 0.16], [0.075, 0.4], [0.095, 0.42], [0.095, 0.45], [0, 0.45]].map(([r, y]) => new THREE.Vector2(r, y));
-  add(new THREE.LatheGeometry(profile, 72), chrome);
+  add(new THREE.LatheGeometry(profile, 72), gold);
   // pump pedal
-  const lever = add(new THREE.BoxGeometry(0.22, 0.018, 0.05), chrome, 0.24, 0.1, 0.1);
+  const lever = add(new THREE.BoxGeometry(0.22, 0.018, 0.05), gold, 0.24, 0.1, 0.1);
   lever.rotation.set(0, 0.5, -0.18);
   // seat frame and cushion
-  add(new RoundedBoxGeometry(0.64, 0.05, 0.6, 3, 0.02), chrome, 0, 0.475, 0);
+  add(new RoundedBoxGeometry(0.64, 0.05, 0.6, 3, 0.02), gold, 0, 0.475, 0);
   add(new RoundedBoxGeometry(0.6, 0.12, 0.56, 4, 0.036), leather, 0, 0.565, 0.01);
-  // backrest: channel-tufted rolls on a chrome back plate, leaning back
+  // backrest: channel-tufted rolls on a gold back plate, leaning back
   const back = new THREE.Group();
   back.position.set(0, 0.62, -0.27);
   back.rotation.x = -0.2;
   g.add(back);
   for (let i = 0; i < 4; i++) add(new RoundedBoxGeometry(0.56, 0.13, 0.09, 4, 0.034), leather, 0, 0.08 + i * 0.138, 0, back);
-  add(new RoundedBoxGeometry(0.58, 0.6, 0.03, 3, 0.012), chrome, 0, 0.29, -0.07, back);
+  add(new RoundedBoxGeometry(0.58, 0.6, 0.03, 3, 0.012), gold, 0, 0.29, -0.07, back);
   // headrest on a rod
   rod(new THREE.Vector3(0, 0.6, -0.04), new THREE.Vector3(0, 0.74, -0.04), 0.012, back);
   add(new RoundedBoxGeometry(0.32, 0.09, 0.1, 4, 0.034), leather, 0, 0.8, 0, back);
@@ -62,7 +63,7 @@ function buildChair() {
     rod(new THREE.Vector3(s * 0.2, 0.47, 0.26), new THREE.Vector3(s * 0.2, 0.2, 0.5), 0.012);
   }
   // footrest
-  add(new RoundedBoxGeometry(0.48, 0.02, 0.16, 3, 0.008), chrome, 0, 0.19, 0.52);
+  add(new RoundedBoxGeometry(0.48, 0.02, 0.16, 3, 0.008), gold, 0, 0.19, 0.52);
   rod(new THREE.Vector3(-0.24, 0.2, 0.6), new THREE.Vector3(0.24, 0.2, 0.6), 0.012);
   return g;
 }

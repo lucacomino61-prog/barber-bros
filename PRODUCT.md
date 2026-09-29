@@ -54,7 +54,7 @@ To be confirmed with the shop. Until then the site claims nothing it cannot prov
 
 ## Evidence on Hand
 
-The Google Maps listing (confirmed correct by Luca) and the haircut price. No photos, barbers' names or other prices yet; those slots are labelled.
+The Google Maps listing (confirmed correct by Luca), the haircut price, and the shop's own Instagram (@barber.___.bros: the barbers Edison, Taulant and Danieli with their numbers, 8 work photos) and TikTok (@barber.bros8). No barber portraits or other prices yet; those slots are labelled.
 
 ## Product Principles
 

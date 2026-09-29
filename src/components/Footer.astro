@@ -1,6 +1,6 @@
 ---
 import Logo from './Logo.astro';
-import { whatsappHref, callHref } from '../data/shop';
+import { shop, whatsappHref, callHref, instagramUrl, tiktokUrl } from '../data/shop';
 import { copy, localePath, type Lang } from '../i18n/copy';
 
 interface Props { lang: Lang }
@@ -13,10 +13,13 @@ const home = localePath(lang, '/');
     <Logo variant="stacked" class="foot__logo" />
     <nav class="foot__nav" aria-label={t.nav.footer}>
       <a href={`${home}#${t.ids.prices}`}>{t.nav.prices}</a>
+      <a href={`${home}#${t.ids.work}`}>{t.nav.work}</a>
       <a href={`${home}#${t.ids.barbers}`}>{t.nav.barbers}</a>
       <a href={`${home}#${t.ids.visit}`}>{t.nav.visit}</a>
       <a href={whatsappHref(lang)} target="_blank" rel="noopener">WhatsApp</a>
       <a href={callHref()}>{t.cta.call}</a>
+      <a href={instagramUrl(shop.instagram)} target="_blank" rel="noopener">Instagram</a>
+      <a href={tiktokUrl(shop.tiktok)} target="_blank" rel="noopener">TikTok</a>
       <a href={localePath(lang, '/brand/')}>{t.nav.brand}</a>
     </nav>
     <p class="small foot__note">{t.footer.note}</p>
